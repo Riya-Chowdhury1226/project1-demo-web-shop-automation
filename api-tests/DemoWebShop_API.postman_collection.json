@@ -1,0 +1,129 @@
+{
+  "info": {
+    "_postman_id": "5d1b7f3e-9a1c-4c1e-8f55-2b7a0c9e1a11",
+    "name": "Demo Web Shop - Users API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. GET all users",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "const users = pm.response.json();",
+              "pm.test('Response is a non-empty array', function () {",
+              "    pm.expect(users).to.be.an('array');",
+              "    pm.expect(users.length).to.be.above(0);",
+              "});",
+              "pm.test('Response contains user information (each user has id, name, email)', function () {",
+              "    users.forEach(function (u) {",
+              "        pm.expect(u).to.have.property('id');",
+              "        pm.expect(u).to.have.property('name');",
+              "        pm.expect(u.name).to.be.a('string').and.not.empty;",
+              "        pm.expect(u).to.have.property('email');",
+              "        pm.expect(u.email).to.be.a('string').and.not.empty;",
+              "    });",
+              "});",
+              "const selected = users[Math.floor(Math.random() * users.length)];",
+              "pm.collectionVariables.set('userId', selected.id);",
+              "pm.collectionVariables.set('selectedUser', JSON.stringify(selected));",
+              "pm.test('Selected user ID is saved in variable', function () {",
+              "    pm.expect(Number(pm.collectionVariables.get('userId'))).to.eql(selected.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/users",
+          "host": ["{{baseUrl}}"],
+          "path": ["users"]
+        }
+      }
+    },
+    {
+      "name": "2. PUT update user by saved ID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const user = JSON.parse(pm.collectionVariables.get('selectedUser'));",
+              "const newName = pm.variables.replaceIn('{{$randomFullName}}');",
+              "const newEmail = pm.variables.replaceIn('{{$randomEmail}}');",
+              "const newCompany = pm.variables.replaceIn('{{$randomCompanyName}}');",
+              "user.name = newName;",
+              "user.email = newEmail;",
+              "user.company.name = newCompany;",
+              "pm.collectionVariables.set('updatedName', newName);",
+              "pm.collectionVariables.set('updatedEmail', newEmail);",
+              "pm.collectionVariables.set('updatedCompany', newCompany);",
+              "pm.collectionVariables.set('putBody', JSON.stringify(user));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.test('Returned ID is same as the stored ID variable', function () {",
+              "    pm.expect(Number(body.id)).to.eql(Number(pm.collectionVariables.get('userId')));",
+              "});",
+              "pm.test('Phone is not empty', function () {",
+              "    pm.expect(body).to.have.property('phone');",
+              "    pm.expect(body.phone).to.not.be.empty;",
+              "});",
+              "pm.test('Returned name matches the updated name', function () {",
+              "    pm.expect(body.name).to.eql(pm.collectionVariables.get('updatedName'));",
+              "});",
+              "pm.test('Returned email matches the updated email', function () {",
+              "    pm.expect(body.email).to.eql(pm.collectionVariables.get('updatedEmail'));",
+              "});",
+              "pm.test('Returned company.name matches the updated company name', function () {",
+              "    pm.expect(body.company.name).to.eql(pm.collectionVariables.get('updatedCompany'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{{putBody}}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://jsonplaceholder.typicode.com" },
+    { "key": "userId", "value": "" },
+    { "key": "selectedUser", "value": "" },
+    { "key": "updatedName", "value": "" },
+    { "key": "updatedEmail", "value": "" },
+    { "key": "updatedCompany", "value": "" },
+    { "key": "putBody", "value": "" }
+  ]
+}
