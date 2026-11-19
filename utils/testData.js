@@ -14,9 +14,10 @@ function newUser() {
 
 const billingAddress = {
   country: 'United States',
-  city: 'New York',
+  state: 'California',
+  city: 'Los Angeles',
   address1: '123 Main Street',
-  zip: '10001',
+  zip: '90001',
   phone: '1234567890',
 };
 
